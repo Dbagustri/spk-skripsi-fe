@@ -5,17 +5,6 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import AlternativeCard from "../../components/questionnaire/AlternativeCard";
 
-const courseMapping = {
-  1: "Rekayasa Perangkat Lunak (RPL)",
-  2: "Framework Programming",
-  3: "Sistem Basis Data",
-  4: "Kecerdasan Buatan (AI)",
-  5: "Sistem Pendukung Keputusan (SPK)",
-  6: "Statistika Komputer",
-  7: "Mobile Programming",
-  8: "Pengolahan Citra Digital",
-};
-
 export default function StudentQuestionnaire() {
   const navigate = useNavigate();
 
@@ -221,7 +210,7 @@ export default function StudentQuestionnaire() {
             {alternatives.map((alternative) => (
               <div key={alternative.id}>
                 <label className="block text-sm font-medium mb-2">
-                  {courseMapping[alternative.id]}
+                  {alternative.mata_kuliah_relevan || "Belum diatur"}
                 </label>
 
                 <input
@@ -232,7 +221,7 @@ export default function StudentQuestionnaire() {
                   className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-teal-700"
                   value={formData[alternative.id]?.c1Raw || ""}
                   onChange={(e) => {
-                    const raw = e.target.value;
+                    const raw = e.target.value || "";
 
                     handleChange(alternative.id, "c1Raw", raw);
 

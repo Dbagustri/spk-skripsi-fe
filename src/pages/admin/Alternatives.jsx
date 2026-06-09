@@ -19,6 +19,7 @@ export default function Alternatives() {
     kode: "",
     nama_topik: "",
     kompetensi_lulusan: "",
+    mata_kuliah_relevan: "",
     deskripsi: "",
   });
 
@@ -80,6 +81,7 @@ export default function Alternatives() {
       kode: "",
       nama_topik: "",
       kompetensi_lulusan: "",
+      mata_kuliah_relevan: "",
       deskripsi: "",
     });
 
@@ -101,7 +103,11 @@ export default function Alternatives() {
       const payload = {
         kode: form.kode,
         nama_topik: form.nama_topik,
+
         kompetensi_lulusan: form.kompetensi_lulusan,
+
+        mata_kuliah_relevan: form.mata_kuliah_relevan,
+
         deskripsi: form.deskripsi,
       };
 
@@ -131,8 +137,13 @@ export default function Alternatives() {
 
     setForm({
       kode: item.kode,
+
       nama_topik: item.nama_topik,
+
       kompetensi_lulusan: item.kompetensi_lulusan,
+
+      mata_kuliah_relevan: item.mata_kuliah_relevan || "",
+
       deskripsi: item.deskripsi || "",
     });
 
@@ -211,6 +222,7 @@ export default function Alternatives() {
               <th className="text-left p-5">Nama Topik</th>
 
               <th className="text-left p-5">Kompetensi</th>
+              <th className="text-left p-5">Mata Kuliah</th>
 
               <th className="text-left p-5">Deskripsi</th>
 
@@ -226,6 +238,7 @@ export default function Alternatives() {
                 <td className="p-5">{item.nama_topik}</td>
 
                 <td className="p-5">{item.kompetensi_lulusan}</td>
+                <td className="p-5">{item.mata_kuliah_relevan || "-"}</td>
 
                 <td className="p-5">{item.deskripsi || "-"}</td>
 
@@ -285,6 +298,12 @@ export default function Alternatives() {
                 label="Kompetensi Lulusan"
                 name="kompetensi_lulusan"
                 value={form.kompetensi_lulusan}
+                onChange={handleChange}
+              />
+              <Input
+                label="Mata Kuliah Relevan"
+                name="mata_kuliah_relevan"
+                value={form.mata_kuliah_relevan}
                 onChange={handleChange}
               />
 

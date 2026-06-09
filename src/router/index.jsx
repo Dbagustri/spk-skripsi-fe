@@ -40,7 +40,7 @@ export default function Router() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedRole="admin">
+            <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           }

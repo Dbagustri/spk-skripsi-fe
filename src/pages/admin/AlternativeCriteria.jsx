@@ -256,59 +256,61 @@ export default function AlternativeCriteria() {
 
       {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-2xl overflow-hidden shadow-2xl">
-            <div className="px-8 py-6 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Edit Penilaian</h2>
+        <div className="fixed inset-0 bg-black/40 z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="bg-white rounded-[32px] w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
+              <div className="px-8 py-6 border-b flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold">Edit Penilaian</h2>
 
-                <p className="text-gray-500 mt-1">
-                  {selectedAlternative?.nama_topik}
-                </p>
+                  <p className="text-gray-500 mt-1">
+                    {selectedAlternative?.nama_topik}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="hover:bg-gray-100 p-2 rounded-xl"
+                >
+                  <X />
+                </button>
               </div>
 
-              <button
-                onClick={() => setShowModal(false)}
-                className="hover:bg-gray-100 p-2 rounded-xl"
-              >
-                <X />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-5">
-              {scores.map((item) => (
-                <div
-                  key={item.criteria_id}
-                  className="flex items-center justify-between border rounded-2xl px-5 py-4"
-                >
-                  <div>
-                    <p className="font-semibold">{item.kode}</p>
-
-                    <p className="text-sm text-gray-500">{item.nama}</p>
-                  </div>
-
-                  <select
-                    value={item.nilai}
-                    onChange={(e) =>
-                      handleScoreChange(item.criteria_id, e.target.value)
-                    }
-                    className="border rounded-xl px-4 py-3 w-[120px]"
+              <div className="p-8 space-y-5 overflow-y-auto">
+                {" "}
+                {scores.map((item) => (
+                  <div
+                    key={item.criteria_id}
+                    className="flex items-center justify-between border rounded-2xl px-5 py-4"
                   >
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <option key={num} value={num}>
-                        {num}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
+                    <div>
+                      <p className="font-semibold">{item.kode}</p>
 
-              <button
-                onClick={handleSave}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white w-full py-4 rounded-2xl font-medium mt-4"
-              >
-                Simpan Penilaian
-              </button>
+                      <p className="text-sm text-gray-500">{item.nama}</p>
+                    </div>
+
+                    <select
+                      value={item.nilai}
+                      onChange={(e) =>
+                        handleScoreChange(item.criteria_id, e.target.value)
+                      }
+                      className="border rounded-xl px-4 py-3 w-[120px]"
+                    >
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>
+                          {num}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+                <button
+                  onClick={handleSave}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full py-4 rounded-2xl font-medium mt-4"
+                >
+                  Simpan Penilaian
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -35,7 +35,7 @@ export default function Login() {
       }
 
       if (role === "user") {
-        navigate("/student/questionnaire");
+        navigate("/dashboard");
       }
     }
   }, [navigate]);
@@ -70,7 +70,7 @@ export default function Login() {
       if (role === "admin") {
         navigate("/dashboard");
       } else {
-        navigate("/student/questionnaire");
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Email atau password salah");
