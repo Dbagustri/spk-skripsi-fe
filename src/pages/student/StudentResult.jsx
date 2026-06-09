@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-
 import axios from "axios";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { ArrowLeft, Printer, Star } from "lucide-react";
-
 import { useNavigate } from "react-router-dom";
-
-import { useReactToPrint } from "react-to-print";
-
+import domtoimage from "dom-to-image-more";
 import MainLayout from "../../layouts/MainLayout";
 
 export default function StudentResult() {
@@ -57,25 +54,82 @@ export default function StudentResult() {
   // ==========================
   // EXPORT PDF
   // ==========================
-  const handleExportPDF = useReactToPrint({
-    contentRef: pdfRef,
+  const handleExportPDF = () => {
+    const pdf = new jsPDF();
 
-    documentTitle: `hasil-rekomendasi-${recommendation?.kode || "skripsian"}`,
+    // title
+    pdf.setFontSize(18);
 
-    pageStyle: `
-        @page {
-          size: A4;
-          margin: 16mm;
-        }
+    pdf.setFont("helvetica", "bold");
 
-        @media print {
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        }
-      `,
-  });
+    pdf.text("Hasil Rekomendasi Topik Skripsi", 105, 20, {
+      align: "center",
+    });
+
+    pdf.setFontSize(10);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text("Sistem Pendukung Keputusan Metode WASPAS", 105, 28, {
+      align: "center",
+    });
+
+    // top match
+    pdf.setFontSize(14);
+
+    pdf.setFont("helvetica", "bold");
+
+    pdf.text("Top Recommendation", 14, 45);
+
+    pdf.setFontSize(12);
+
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(`Topik : ${recommendation?.nama_topik || "-"}`, 14, 55);
+
+    pdf.text(
+      `Kompetensi : ${recommendation?.kompetensi_lulusan || "-"}`,
+      14,
+      63,
+    );
+
+    pdf.text(`Score : ${Number(recommendation?.score).toFixed(3)}`, 14, 71);
+
+    // ranking table
+    autoTable(pdf, {
+      startY: 85,
+
+      head: [["Rank", "Kode", "Nama Bidang", "Score"]],
+
+      body: ranking.map((item) => [
+        item.rank,
+        item.kode,
+        item.nama_topik,
+        Number(item.score).toFixed(3),
+      ]),
+
+      theme: "grid",
+
+      headStyles: {
+        fillColor: [15, 118, 110],
+      },
+
+      styles: {
+        fontSize: 10,
+      },
+    });
+
+    // footer
+    pdf.setFontSize(9);
+
+    pdf.text(
+      `Generated on ${new Date().toLocaleDateString("id-ID")}`,
+      14,
+      pdf.internal.pageSize.height - 10,
+    );
+
+    pdf.save("hasil-rekomendasi-skripsian.pdf");
+  };
 
   // ==========================
   // LOADING
@@ -105,7 +159,8 @@ export default function StudentResult() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 lg:w-[280px]">
+          <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:w-[280px]">
+            {" "}
             <button
               onClick={handleExportPDF}
               className="bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl flex items-center justify-center gap-2 transition"
@@ -113,7 +168,6 @@ export default function StudentResult() {
               <Printer size={18} />
               Cetak / Simpan PDF
             </button>
-
             <button
               onClick={() => navigate("/dashboard")}
               className="border border-teal-700 text-teal-700 hover:bg-teal-50 py-3 rounded-xl flex items-center justify-center gap-2 transition"
@@ -137,14 +191,16 @@ export default function StudentResult() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {" "}
             {/* LEFT */}
             <div className="lg:col-span-2 space-y-6">
               {/* TOP MATCH */}
               <div className="bg-white border rounded-3xl p-8 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-teal-50 rounded-full -translate-y-10 translate-x-10" />
 
-                <div className="relative z-10 flex justify-between items-start gap-6">
+                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start gap-6">
+                  {" "}
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <span className="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-medium">
@@ -169,15 +225,13 @@ export default function StudentResult() {
                       {recommendation?.insight}
                     </p>
                   </div>
-
                   {/* SCORE */}
-                  <div className="bg-teal-700 text-white rounded-2xl p-6 text-center min-w-[150px] shadow-md">
+                  <div className="bg-teal-700 text-white rounded-2xl p-6 text-center w-full lg:w-[170px] shrink-0 shadow-md">
+                    {" "}
                     <p className="text-sm opacity-80">FINAL SCORE</p>
-
                     <h2 className="text-4xl font-bold mt-2">
                       {Number(recommendation?.score).toFixed(3)}
                     </h2>
-
                     <p className="text-xs opacity-80 mt-2">High Relevance</p>
                   </div>
                 </div>
@@ -189,7 +243,8 @@ export default function StudentResult() {
                   <h2 className="font-semibold text-lg">Peringkat Lainnya</h2>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-b-3xl">
+                  {" "}
                   <table className="w-full text-sm">
                     <thead className="bg-slate-50">
                       <tr>
@@ -229,7 +284,6 @@ export default function StudentResult() {
                 </div>
               </div>
             </div>
-
             {/* RIGHT */}
             {/* RIGHT */}
             <div className="space-y-6">

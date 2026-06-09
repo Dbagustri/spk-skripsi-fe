@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import { Eye, EyeOff } from "lucide-react";
 
 import api from "../../api/axios";
 import AuthLayout from "../../layouts/AuthLayout";
@@ -21,6 +23,27 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // redirect jika sudah login
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    const role = user?.role?.[0];
+
+    if (token) {
+      if (role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/student/questionnaire");
+      }
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setForm({
@@ -46,7 +69,13 @@ export default function Register() {
 
       localStorage.setItem("user", JSON.stringify(user));
 
-      navigate("/dashboard");
+      const role = user?.role?.[0];
+
+      if (role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/student/questionnaire");
+      }
     } catch (err) {
       console.log(err);
 
@@ -201,36 +230,62 @@ export default function Register() {
             <h3 className="font-semibold text-slate-800 mb-4">Keamanan Akun</h3>
 
             <div className="grid md:grid-cols-2 gap-5">
+              {/* PASSWORD */}
               <div>
                 <label className="text-sm font-medium text-slate-700">
                   Password
                 </label>
 
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="********"
-                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-600"
-                  required
-                />
+                <div className="relative mt-2">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="********"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-teal-600"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
+              {/* CONFIRM PASSWORD */}
               <div>
                 <label className="text-sm font-medium text-slate-700">
                   Konfirmasi Password
                 </label>
 
-                <input
-                  type="password"
-                  name="password_confirmation"
-                  value={form.password_confirmation}
-                  onChange={handleChange}
-                  placeholder="********"
-                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-600"
-                  required
-                />
+                <div className="relative mt-2">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="password_confirmation"
+                    value={form.password_confirmation}
+                    onChange={handleChange}
+                    placeholder="********"
+                    className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-teal-600"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

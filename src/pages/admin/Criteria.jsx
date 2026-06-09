@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import api from "../../api/axios";
 import AdminLayout from "../../layouts/AdminLayout";
 
@@ -18,13 +19,10 @@ export default function Criteria() {
   const [form, setForm] = useState({
     kode: "",
     nama: "",
-    bobot: "",
+    source: "user",
     tipe: "benefit",
     deskripsi: "",
   });
-
-  // sementara force admin
-  const isAdmin = true;
 
   // ======================
   // FETCH
@@ -53,7 +51,8 @@ export default function Criteria() {
       (item) =>
         item.nama?.toLowerCase().includes(search.toLowerCase()) ||
         item.kode?.toLowerCase().includes(search.toLowerCase()) ||
-        item.tipe?.toLowerCase().includes(search.toLowerCase()),
+        item.tipe?.toLowerCase().includes(search.toLowerCase()) ||
+        item.source?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [search, criteria]);
 
@@ -80,7 +79,7 @@ export default function Criteria() {
     setForm({
       kode: "",
       nama: "",
-      bobot: "",
+      source: "user",
       tipe: "benefit",
       deskripsi: "",
     });
@@ -90,6 +89,7 @@ export default function Criteria() {
 
   const closeModal = () => {
     resetForm();
+
     setShowModal(false);
   };
 
@@ -103,7 +103,7 @@ export default function Criteria() {
       const payload = {
         kode: form.kode,
         nama: form.nama,
-        bobot: parseFloat(form.bobot),
+        source: form.source,
         tipe: form.tipe,
         deskripsi: form.deskripsi,
       };
@@ -124,7 +124,7 @@ export default function Criteria() {
           : "Kriteria berhasil ditambahkan",
       );
     } catch (error) {
-      console.error(error);
+      console.error(error.response?.data || error);
 
       alert(error.response?.data?.message || "Gagal menyimpan data");
     }
@@ -139,7 +139,7 @@ export default function Criteria() {
     setForm({
       kode: item.kode,
       nama: item.nama,
-      bobot: item.bobot,
+      source: item.source,
       tipe: item.tipe,
       deskripsi: item.deskripsi || "",
     });
@@ -171,14 +171,14 @@ export default function Criteria() {
   return (
     <AdminLayout>
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 mb-8">
         <div>
           <h1 className="text-4xl font-bold">Data Kriteria</h1>
 
           <p className="text-gray-500 mt-2">Kelola data kriteria SPK</p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           {/* SEARCH */}
           <div className="relative">
             <Search
@@ -191,7 +191,7 @@ export default function Criteria() {
               placeholder="Cari kriteria..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-white border rounded-2xl py-3 pl-12 pr-4 w-[300px]"
+              className="bg-white border rounded-2xl py-3 pl-12 pr-4 w-full sm:w-[300px]"
             />
           </div>
 
@@ -201,7 +201,7 @@ export default function Criteria() {
               resetForm();
               setShowModal(true);
             }}
-            className="bg-emerald-600 text-white px-5 rounded-2xl flex items-center gap-2"
+            className="bg-emerald-600 hover:bg-emerald-700 transition text-white px-5 py-3 rounded-2xl flex items-center justify-center gap-2"
           >
             <Plus size={18} />
             Tambah
@@ -211,81 +211,93 @@ export default function Criteria() {
 
       {/* TABLE */}
       <div className="bg-white rounded-[30px] overflow-hidden border">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b">
-            <tr>
-              <th className="text-left p-5">Kode</th>
-
-              <th className="text-left p-5">Nama</th>
-
-              <th className="text-left p-5">Bobot</th>
-
-              <th className="text-left p-5">Tipe</th>
-
-              <th className="text-left p-5">Deskripsi</th>
-
-              <th className="text-center p-5">Aksi</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            <thead className="bg-slate-50 border-b">
               <tr>
-                <td colSpan="6" className="text-center py-10">
-                  Loading...
-                </td>
+                <th className="text-left p-5">Kode</th>
+
+                <th className="text-left p-5">Nama</th>
+
+                <th className="text-left p-5">Source</th>
+
+                <th className="text-left p-5">Tipe</th>
+
+                <th className="text-left p-5">Deskripsi</th>
+
+                <th className="text-center p-5">Aksi</th>
               </tr>
-            ) : filteredData.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-10">
-                  Tidak ada data
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((item) => (
-                <tr key={item.id} className="border-b">
-                  <td className="p-5">{item.kode}</td>
+            </thead>
 
-                  <td className="p-5">{item.nama}</td>
-
-                  <td className="p-5">{item.bobot}</td>
-
-                  <td className="p-5">
-                    <span
-                      className={`px-4 py-2 rounded-full text-sm ${
-                        item.tipe === "benefit"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {item.tipe}
-                    </span>
-                  </td>
-
-                  <td className="p-5">{item.deskripsi || "-"}</td>
-
-                  <td className="p-5">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="bg-blue-100 p-3 rounded-xl text-blue-700"
-                      >
-                        <Pencil size={18} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="bg-red-100 p-3 rounded-xl text-red-700"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-10">
+                    Loading...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-10">
+                    Tidak ada data
+                  </td>
+                </tr>
+              ) : (
+                filteredData.map((item) => (
+                  <tr key={item.id} className="border-b">
+                    <td className="p-5">{item.kode}</td>
+
+                    <td className="p-5">{item.nama}</td>
+
+                    <td className="p-5">
+                      <span
+                        className={`px-4 py-2 rounded-full text-sm ${
+                          item.source === "admin"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {item.source}
+                      </span>
+                    </td>
+
+                    <td className="p-5">
+                      <span
+                        className={`px-4 py-2 rounded-full text-sm ${
+                          item.tipe === "benefit"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {item.tipe}
+                      </span>
+                    </td>
+
+                    <td className="p-5">{item.deskripsi || "-"}</td>
+
+                    <td className="p-5">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="bg-blue-100 p-3 rounded-xl text-blue-700"
+                        >
+                          <Pencil size={18} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="bg-red-100 p-3 rounded-xl text-red-700"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* MODAL */}
@@ -293,10 +305,10 @@ export default function Criteria() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[30px] w-full max-w-xl max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="sticky top-0 bg-white z-10 px-8 pt-8 pb-5 border-b flex justify-between items-center">
-              {" "}
               <h2 className="text-2xl font-bold">
                 {editingId ? "Edit" : "Tambah"} Kriteria
               </h2>
+
               <button onClick={closeModal}>
                 <X />
               </button>
@@ -318,14 +330,20 @@ export default function Criteria() {
                   onChange={handleChange}
                 />
 
-                <Input
-                  label="Bobot"
-                  type="number"
-                  step="0.01"
-                  name="bobot"
-                  value={form.bobot}
-                  onChange={handleChange}
-                />
+                <div>
+                  <label className="block mb-2 font-medium">Source</label>
+
+                  <select
+                    name="source"
+                    value={form.source}
+                    onChange={handleChange}
+                    className="w-full border rounded-2xl p-4"
+                  >
+                    <option value="user">User</option>
+
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
 
                 <div>
                   <label className="block mb-2 font-medium">Tipe</label>
@@ -351,7 +369,7 @@ export default function Criteria() {
                   className="w-full border rounded-2xl p-4"
                 />
 
-                <button className="bg-emerald-600 text-white w-full py-4 rounded-2xl">
+                <button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full py-4 rounded-2xl transition">
                   Simpan
                 </button>
               </form>

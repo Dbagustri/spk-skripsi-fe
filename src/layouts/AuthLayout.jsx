@@ -6,10 +6,6 @@ export default function AuthLayout({ children }) {
       {/* HEADER */}
       <header className="h-16 border-b bg-white px-8 flex items-center justify-between">
         <h1 className="font-bold text-teal-700 tracking-wide">SKRIPSIAN</h1>
-
-        <button className="text-xs text-teal-700 hover:underline">
-          Contact Support
-        </button>
       </header>
 
       {/* CONTENT */}
@@ -56,14 +52,6 @@ export default function AuthLayout({ children }) {
         <h2 className="font-semibold text-teal-700">SKRIPSIAN</h2>
 
         <p>© 2026 SKRIPSIAN. All rights reserved.</p>
-
-        <div className="flex gap-5">
-          <button>Privacy Policy</button>
-
-          <button>Terms of Service</button>
-
-          <button>Help Center</button>
-        </div>
       </footer>
     </div>
   );

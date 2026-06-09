@@ -43,6 +43,11 @@ export default function AdminSidebar() {
       icon: Settings2,
       path: "/admin/alternative-criteria",
     },
+    {
+      label: "Pengaturan Bobot",
+      icon: SlidersHorizontal,
+      path: "/admin/weights",
+    },
   ];
 
   return (

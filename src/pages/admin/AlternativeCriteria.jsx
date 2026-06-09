@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import api from "../../api/axios";
 import AdminLayout from "../../layouts/AdminLayout";
 
@@ -6,6 +7,8 @@ import { Search, Pencil, X } from "lucide-react";
 
 export default function AlternativeCriteria() {
   const [alternatives, setAlternatives] = useState([]);
+
+  const [adminCriteria, setAdminCriteria] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -21,31 +24,30 @@ export default function AlternativeCriteria() {
   // FETCH DATA
   // ==========================
   useEffect(() => {
-    let mounted = true;
-
     const loadData = async () => {
       try {
         setLoading(true);
 
-        const response = await api.get("/admin/alternative-criteria");
+        const [alternativeRes, criteriaRes] = await Promise.all([
+          api.get("/admin/alternative-criteria"),
 
-        if (mounted) {
-          setAlternatives(response.data.data || []);
-        }
+          api.get("/admin/criteria"),
+        ]);
+
+        setAlternatives(alternativeRes.data.data || []);
+
+        // hanya criteria admin
+        setAdminCriteria(
+          (criteriaRes.data.data || []).filter((c) => c.source === "admin"),
+        );
       } catch (error) {
         console.error("Fetch alternative criteria error:", error);
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     loadData();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   // ==========================
@@ -61,22 +63,39 @@ export default function AlternativeCriteria() {
   }, [search, alternatives]);
 
   // ==========================
+  // REFRESH
+  // ==========================
+  const refreshData = async () => {
+    const response = await api.get("/admin/alternative-criteria");
+
+    setAlternatives(response.data.data || []);
+  };
+
+  // ==========================
   // OPEN MODAL
   // ==========================
   const handleEdit = (alternative) => {
     setSelectedAlternative(alternative);
 
-    setScores(
-      alternative.criteria.map((item) => ({
-        criteria_id: item.criteria_id,
+    const existingScores = alternative.criteria || [];
 
-        nama: item.criterion?.nama,
+    const mergedScores = adminCriteria.map((criteria) => {
+      const existing = existingScores.find(
+        (score) => score.criteria_id === criteria.id,
+      );
 
-        kode: item.criterion?.kode,
+      return {
+        criteria_id: criteria.id,
 
-        nilai: item.nilai,
-      })),
-    );
+        nama: criteria.nama,
+
+        kode: criteria.kode,
+
+        nilai: existing?.nilai ?? 1,
+      };
+    });
+
+    setScores(mergedScores);
 
     setShowModal(true);
   };
@@ -110,10 +129,7 @@ export default function AlternativeCriteria() {
         })),
       });
 
-      // refresh data
-      const response = await api.get("/admin/alternative-criteria");
-
-      setAlternatives(response.data.data || []);
+      await refreshData();
 
       setShowModal(false);
 
@@ -159,7 +175,7 @@ export default function AlternativeCriteria() {
       {/* TABLE */}
       <div className="bg-white rounded-[32px] overflow-hidden border shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-slate-50 border-b">
               <tr>
                 <th className="text-left p-5">Kode</th>
@@ -203,14 +219,20 @@ export default function AlternativeCriteria() {
 
                     <td className="p-5">
                       <div className="flex flex-wrap gap-2">
-                        {item.criteria?.map((c) => (
-                          <span
-                            key={c.id}
-                            className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs"
-                          >
-                            {c.criterion?.kode}: {c.nilai}
-                          </span>
-                        ))}
+                        {adminCriteria.map((criteria) => {
+                          const found = item.criteria?.find(
+                            (c) => c.criteria_id === criteria.id,
+                          );
+
+                          return (
+                            <span
+                              key={criteria.id}
+                              className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs"
+                            >
+                              {criteria.kode}: {found?.nilai ?? "-"}
+                            </span>
+                          );
+                        })}
                       </div>
                     </td>
 

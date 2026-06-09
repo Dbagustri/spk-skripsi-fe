@@ -20,11 +20,10 @@ export default function StudentQuestionnaire() {
   const navigate = useNavigate();
 
   const [alternatives, setAlternatives] = useState([]);
-
+  const [criteria, setCriteria] = useState([]);
   const [formData, setFormData] = useState({});
 
   const [loading, setLoading] = useState(true);
-
   const [submitting, setSubmitting] = useState(false);
 
   // ==========================
@@ -47,7 +46,9 @@ export default function StudentQuestionnaire() {
         );
 
         if (mounted) {
-          setAlternatives(response.data.data.alternatives);
+          setAlternatives(response.data.data.alternatives || []);
+
+          setCriteria(response.data.data.criteria || []);
         }
       } catch (error) {
         console.error("Questionnaire Error:", error);
@@ -72,11 +73,8 @@ export default function StudentQuestionnaire() {
     const score = Number(value);
 
     if (score >= 85) return 5;
-
     if (score >= 80) return 4;
-
     if (score >= 70) return 3;
-
     if (score >= 65) return 2;
 
     return 1;
@@ -104,7 +102,9 @@ export default function StudentQuestionnaire() {
     return alternatives.every((alternative) => {
       const data = formData[alternative.id];
 
-      return data?.c1 && data?.c2 && data?.c3 && data?.c4 && data?.c9;
+      return criteria.every(
+        (criterion) => data?.[`c${criterion.id}`] !== undefined,
+      );
     });
   };
 
@@ -124,50 +124,20 @@ export default function StudentQuestionnaire() {
       const answers = [];
 
       Object.entries(formData).forEach(([altId, value]) => {
-        answers.push(
-          {
+        criteria.forEach((criterion) => {
+          answers.push({
             alternative_id: Number(altId),
 
-            criteria_id: 1,
+            criteria_id: criterion.id,
 
-            nilai: value.c1,
-          },
-
-          {
-            alternative_id: Number(altId),
-
-            criteria_id: 2,
-
-            nilai: value.c2,
-          },
-
-          {
-            alternative_id: Number(altId),
-
-            criteria_id: 3,
-
-            nilai: value.c3,
-          },
-
-          {
-            alternative_id: Number(altId),
-
-            criteria_id: 4,
-
-            nilai: value.c4,
-          },
-
-          {
-            alternative_id: Number(altId),
-
-            criteria_id: 5,
-
-            nilai: value.c9,
-          },
-        );
+            nilai: value[`c${criterion.id}`],
+          });
+        });
       });
 
       const token = localStorage.getItem("token");
+
+      // submit questionnaire
       await axios.post(
         "http://localhost:8000/api/questionnaire",
         {
@@ -180,7 +150,7 @@ export default function StudentQuestionnaire() {
         },
       );
 
-      // CALCULATE WASPAS
+      // calculate recommendation
       await axios.post(
         "http://localhost:8000/api/recommendation",
         {},
@@ -295,6 +265,7 @@ export default function StudentQuestionnaire() {
             <AlternativeCard
               key={alternative.id}
               alternative={alternative}
+              criteria={criteria}
               formData={formData}
               handleChange={handleChange}
             />
